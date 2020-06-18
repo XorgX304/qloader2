@@ -1,7 +1,5 @@
 asm (
     ".section .entry\n\t"
-    "xor dh, dh\n\t"
-    "push edx\n\t"
 
     // Zero out .bss
     "xor al, al\n\t"
@@ -11,7 +9,7 @@ asm (
     "sub ecx, edx\n\t"
     "rep stosb\n\t"
 
-    "call main\n\t"
+    "jmp main\n\t"
 );
 
 #include <drivers/vga_textmode.h>

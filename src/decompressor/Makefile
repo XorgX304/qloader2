@@ -1,4 +1,4 @@
-CC = ../toolchain/bin/i386-elf-gcc
+CC = ../../toolchain/bin/i386-elf-gcc
 
 CFLAGS = -Os -pipe -Wall -Wextra
 
@@ -26,19 +26,16 @@ INTERNAL_LDFLAGS = \
 
 .PHONY: all clean
 
-C_FILES := $(shell find ./ -type f -name '*.c' | sort | sed '/decompressor/d')
+C_FILES := $(shell find ./ -type f -name '*.c' | sort)
 OBJ := $(C_FILES:.c=.o)
 
-all: qloader2.bin
+all: decompressor.bin
 
-qloader2.bin: $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) $(INTERNAL_LDFLAGS) -o stage2.bin
-	$(MAKE) -C decompressor
-	cd bootsect && nasm bootsect.asm -fbin -o ../qloader2.bin
+decompressor.bin: $(OBJ)
+	$(CC) $(OBJ) $(LDFLAGS) $(INTERNAL_LDFLAGS) -o $@
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNAL_CFLAGS) -c $< -o $@
 
 clean:
-	$(MAKE) -C decompressor clean
 	rm -f $(OBJ)

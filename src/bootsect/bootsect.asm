@@ -12,7 +12,7 @@ start:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov sp, 0x7c00
+    mov sp, 0xfff0
     sti
 
     mov si, LoadingMsg
@@ -72,20 +72,24 @@ times 0x1b8-($-$$) db 0
 times 510-($-$$) db 0
 dw 0xaa55
 
-; ********************* Stage 2 *********************
+; ********************* Stage 1.5 *********************
 
-stage2:
+stage15:
+    push es
+    push 0x6000
+    pop es
     mov eax, dword [stage2_sector]
     inc eax
-    mov ebx, 0x8000
+    xor ebx, ebx
     mov ecx, 62
     call read_sectors
+    pop es
     jc err_reading_disk
 
     call enable_a20
     jc err_enabling_a20
 
-    lgdt [GDT]
+    call load_gdt
 
     cli
 
@@ -103,7 +107,12 @@ stage2:
     mov gs, ax
     mov ss, ax
 
-    jmp 0x8000
+    and edx, 0xff
+    push edx
+    push stage2.size
+    push (stage2 - 0x8000) + 0x60000
+
+    call 0x60000
 
 bits 16
 %include 'a20_enabler.inc'
@@ -111,6 +120,11 @@ bits 16
 
 times 1024-($-$$) db 0
 
+incbin '../decompressor/decompressor.bin'
+
+align 16
+stage2:
 incbin '../stage2.bin'
+.size: equ $ - stage2
 
 times 32768-($-$$) db 0
